@@ -149,8 +149,17 @@ class JointLister(QtWidgets.QTableWidget):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.jointListerRightClick)
         
-        self.itemClicked.connect(self.clicked)
-    
+
+        if pdil.ui.qt_main_verions >= 6:
+            # hack:: Appears to be a bug in this version of pyside but it won't bind otherwise
+            def _temp(*args):
+                self.clicked(args[0])
+
+            self.itemClicked.connect(_temp)
+        else:
+            self.itemClicked.connect(self.clicked)
+
+
     def clicked(self, item):
         '''
         When an item is clicked, possibly do something, like change data based
