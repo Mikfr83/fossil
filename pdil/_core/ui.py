@@ -22,6 +22,10 @@ from pymel.core import (
 #from ..vendor.Qt.QtGui import *
 #from ..vendor.Qt.QtCore import *
 from ..vendor.Qt import QtWidgets
+from ..vendor import Qt
+
+# Get the main version, i.e. 5 or 6 to manage breaking changes.  2026 uses 6
+qt_main_verions = int(Qt.__qt_version__[0])
 
 # Load up the correct ui compiler
 try:
@@ -77,6 +81,8 @@ __all__ = [
     'progressWin',
     'notify',
     'disableNotify',
+    'select_tree_item',
+    'qt_main_verions',
 ]
 
 # Make a top level 'module' so ui files can refer to it directly, aka the generated py code works.
@@ -519,3 +525,10 @@ def disableNotify():
         yield
     finally:
         _disableNotifyCount -= 1
+
+def select_tree_item(tree, tree_item, selected):
+
+    if qt_main_verions >= 6:
+        tree_item.setSelected(selected)
+    else:
+        tree.setItemSelected(tree_item, selected)
