@@ -154,3 +154,24 @@ def leadController(obj):
             return objs[0]
     
     return None
+
+
+
+def closest_real_joint(ctrl):
+    ''' Give a control, returns the closest real joint.
+    
+    Easy for fk, harder for ik, ex: the pv control returns the elbow.
+    '''
+    
+    lead = leadController(ctrl)
+    
+    if lead.getMotionType().endswith('fk'):
+        target_joint = pdil.constraints.getOrientConstrainee(ctrl)
+    else:
+        target_joint = lead.card.rigCommandClass.findClosestJoint(ctrl)
+        
+    return target_joint
+
+
+# Camel case mapping
+closestRealJoint = closest_real_joint

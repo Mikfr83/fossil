@@ -502,10 +502,32 @@ class SplineTwist(MetaControl):
         return kwargs
 
 
-
-
-
-
+    @staticmethod
+    def findClosestJoint(ctrl):
+        ''' Takes a control made by this class and returns the most appropriate real joint.
+        '''
+        lead = node.leadController(ctrl)
+        
+        side = lead.getSide()
+        if side != 'Center': # todo:: Need to unify sides internally
+            real_joints = lead.card.getRealJoints( side.lower() )
+        else:
+            real_joints = lead.card.getRealJoints()
+        
+        
+        if ctrl == lead:
+            return real_joints[0] 
+            
+        else:
+            _, key = ctrl.ownerInfo()
+            
+            percent = (int(key) + 1 ) / (len(lead.subControl.keys()))
+            print(percent, 'pct')
+            index = round(percent * (len( real_joints ) - 1) )
+            print(index, 'index')
+            return real_joints[index]
+        
+        raise Exception(f'Unable to determine relevant joint for {ctrl}')
 
 
 def addConnectingCurve(objs):

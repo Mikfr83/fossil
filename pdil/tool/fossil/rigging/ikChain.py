@@ -379,7 +379,35 @@ class IkChain(MetaControl):
         kwargs['twists'] = twists
                 
         return kwargs
+    
+    
+    @staticmethod
+    def findClosestJoint(ctrl):
+        ''' Takes a control made by this class and returns the most appropriate real joint.
+        '''
+        lead = node.leadController(ctrl)
         
+        side = lead.getSide()
+        if side != 'Center': # todo:: Need to unify sides internally
+            real_joints = lead.card.getRealJoints( side.lower() )
+        else:
+            real_joints = lead.card.getRealJoints()
+        
+        
+        if ctrl == lead:
+            return real_joints[-1] 
+            
+        else:
+            _, key = ctrl.ownerInfo()
+            
+            if key == 'pv':
+                return real_joints[1] 
+            
+            elif key == 'socket':
+                return real_joints[0] 
+        
+        raise Exception(f'Unable to determine relevant joint for {ctrl}')
+
 
 class activator(object):
     
