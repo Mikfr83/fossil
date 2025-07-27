@@ -7,7 +7,15 @@ except NameError:
 
 from collections import OrderedDict
 from copy import deepcopy
-import inspect
+
+try:
+    # Try to import the python3 version first...
+    from inspect import getfullargspec as inspect_getfullargspec
+except:
+    # fallback to python2 version
+    from inspect import getargspec as inspect_getfullargspec
+
+
 import math
 import operator
 import re
@@ -62,7 +70,7 @@ def registerAdjuster(func, name='', anyJoint=()):
     
     name = name if name else func.__name__
     
-    spec = inspect.getargspec(func)
+    spec = inspect_getfullargspec(func)
     
     assert 1 <= len(spec.args) <= 4, ('TPose adjust function {} must have 1-4 args, the first being that card'.format(func) )
     
