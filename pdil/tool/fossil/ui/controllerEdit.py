@@ -6,7 +6,6 @@ import math
 import os
 import traceback
 
-import PySide2
 
 from pymel.core import Callback, colorEditor, colorIndex, objectType, NurbsCurveCV
 from pymel.core import palettePort, PyNode, rotate, select, selected, selectedNodes, warning
@@ -286,10 +285,10 @@ class ShapeEditor(object):
                     
                     #button.setObjectName(f[:-4])
                     
-                    img = PySide2.QtGui.QPixmap(shapeFolder + '/' + f)
-                    img = img.scaled( PySide2.QtCore.QSize( 64 * scale, 64 * scale ),
-                        PySide2.QtCore.Qt.AspectRatioMode.IgnoreAspectRatio,
-                        PySide2.QtCore.Qt.TransformationMode.SmoothTransformation )
+                    img = Qt.QtGui.QPixmap(shapeFolder + '/' + f)
+                    img = img.scaled( Qt.QtCore.QSize( 64 * scale, 64 * scale ),
+                        Qt.QtCore.Qt.AspectRatioMode.IgnoreAspectRatio,
+                        Qt.QtCore.Qt.TransformationMode.SmoothTransformation )
 
                     button.setFlat(True)
                     button.setAutoFillBackground(True)
@@ -380,9 +379,9 @@ class SurfaceColorEditor(object):
             col = i % self.WIDTH
             row = math.floor(i / self.WIDTH)
             
-            b = PySide2.QtWidgets.QPushButton('    ')
+            b = Qt.QtWidgets.QPushButton('    ')
             pal = b.palette()
-            pal.setColor(PySide2.QtGui.QPalette.Button, PySide2.QtGui.QColor( c[0] * 255.0, c[1] * 255.0, c[2] * 255.0 ) )
+            pal.setColor(Qt.QtGui.QPalette.Button, Qt.QtGui.QColor( c[0] * 255.0, c[1] * 255.0, c[2] * 255.0 ) )
             b.setAutoFillBackground(True)
             b.setPalette(pal)
             
@@ -449,10 +448,10 @@ class CurveColorEditor(object):
             col = i % self.WIDTH
             row = math.floor(i / self.WIDTH)
             
-            b = PySide2.QtWidgets.QPushButton('    ')
+            b = Qt.QtWidgets.QPushButton('    ')
             pal = b.palette()
             color = colorIndex(i, q=True)
-            pal.setColor(PySide2.QtGui.QPalette.Button, PySide2.QtGui.QColor( color[0] * 255.0, color[1] * 255.0, color[2] * 255.0 ) )
+            pal.setColor(Qt.QtGui.QPalette.Button, Qt.QtGui.QColor( color[0] * 255.0, color[1] * 255.0, color[2] * 255.0 ) )
             b.setAutoFillBackground(True)
             b.setPalette(pal)
             
