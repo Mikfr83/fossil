@@ -39,7 +39,10 @@ except ImportError:
 try:
     from shiboken import wrapInstance
 except ImportError:
-    from shiboken2 import wrapInstance
+    try:
+        from shiboken2 import wrapInstance
+    except ImportError:
+        from shiboken6 import wrapInstance
 
 
 PY_2 = sys.version_info[0] == 2 # Crass checking for python 2
