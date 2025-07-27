@@ -7,13 +7,15 @@ except ImportError:
     pass
 import json
 import os
+import re
 import tempfile
 import traceback
 
 from maya.api.OpenMayaAnim import MFnSkinCluster
 
-from pymel.core import cmds, dt, duplicate, mel, listConnections, listRelatives, skinCluster, select, selected, PyNode, warning, polyUnite, delete, objExists, skinPercent
+from pymel.core import cmds, dt, duplicate, mel, listConnections, listRelatives, skinCluster, select, selected, PyNode, warning, polyUnite, delete, objExists, skinPercent, polyEvaluate
 
+import pdil
 from . import capi
 from .. _add import shortName
 
@@ -33,6 +35,8 @@ __all__ = [
     'copySkinning',
     'findBoundMeshes',
     'parallelTransfer',
+    'unify_weights',
+    'separate_mesh',
 ]
 
 
@@ -899,3 +903,97 @@ def parallelTransfer(sourceVerts, destVerts):
         
         
     apply( destMesh, dest, targetVerts=destIndices)
+
+
+def unify_weights(count=4):
+    ''' Re-weights the selected verts to the top `count` many influences.
+    
+    Useful for things like buckles and other things that are rigid.
+    '''
+
+    # For speeds, get the mel selected verts and get the indices
+    index_RE = re.compile( r'\[(\d+)\]$' )
+
+    verts = cmds.ls(sl=True, fl=True)
+    indices = [ int( index_RE.search(v).group(1) ) for v in verts  ]
+
+    # Get the object weight data
+    obj_name = verts[0].split('.')[0]
+
+    mesh = PyNode(obj_name)
+    weightdata = get( mesh )
+
+    # Sum the value for each joint that is influencing the selection
+    totals = {}
+
+    for i in indices:
+        for ji, val in weightdata['weights'][i]:
+            totals.setdefault(ji, 0.0)
+            totals[ji] += val
+
+    # Get the top `count` joints
+    ordered = [ [val, i] for i, val in totals.items() ]
+    ordered.sort()
+    ordered.reverse()
+        
+    targets = ordered[:count]
+    
+    # Calc the normalize the weights of these top influencers
+    value_sum = sum( [pair[0] for pair in targets] )
+    new_binding = [ (i, val / value_sum) for val, i in targets]
+    
+    # Recalc the last to hopefully avoid any float error from division.
+    penultimate_sum = sum( [pair[1] for pair in new_binding[:-1]] )
+    new_binding[-1] = (new_binding[-1][0], 1.0 - penultimate_sum)
+    
+    # Apply
+    new_weights = { vert_index: new_binding for vert_index in indices }
+    weightdata['weights'] = new_weights
+    apply( mesh, weightdata, indices)
+
+
+@pdil.alt.name('Separate Faces')
+def separate_mesh(faces=None, removeSrcFaces=True):
+    '''
+    Give a list of faces, defaulting to the selected, extract them, preserving
+    weighting.
+    '''
+    
+    if not faces:
+        faces = selected()
+        
+    srcMesh = faces[0].node()
+    
+    try:
+        weights = get(srcMesh)
+    except Exception:
+        weights = None
+        
+    indices = []
+    for f in faces:
+        indices += f.indices()
+        
+    dup = duplicate(srcMesh)[0]
+    
+    if weights:
+        apply( dup, weights )
+        
+    faceCount = polyEvaluate(dup, f=True)
+    otherIndices = set(range(faceCount))
+    otherIndices.difference_update(indices)
+    
+    _faceCmd = dup.name() + '.f[%i]'
+    faces = [_faceCmd % i for i in otherIndices]
+    delete(faces)
+    
+    if removeSrcFaces:
+        _faceCmd = srcMesh.name() + '.f[%i]'
+        faces = [_faceCmd % i for i in indices]
+        delete(faces)
+        
+    return dup
+
+
+# Camel case mappings
+unifyWeights = unify_weights
+separateMesh = separate_mesh
