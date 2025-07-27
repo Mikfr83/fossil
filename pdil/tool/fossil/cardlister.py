@@ -403,11 +403,11 @@ class CardLister(QtWidgets.QTreeWidget):
             self._dataChangeActive = False
             for item in selectedInUI:
                 if item not in selectedCards:
-                    self.setItemSelected(item, False)
+                    pdil.ui.select_tree_item(self, item, False)
             
             for card, item in self.cardItems.items():
                 if card in selectedCards and card not in selectedInUI:
-                    self.setItemSelected( item, True )
+                    pdil.ui.select_tree_item(self, item, True)
 
             
     def cardListerItemClicked(self, item, col):
